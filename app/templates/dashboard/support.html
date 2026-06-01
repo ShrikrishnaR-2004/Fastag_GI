@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+{% block title %}Support & FAQ — FASTag Portal{% endblock %}
+
+{% block content %}
+<div class="dashboard-layout">
+    {% set active_page = 'support' %}
+    {% include 'dashboard/_sidebar.html' %}
+
+    <main class="dashboard-main">
+        <header class="dashboard-header">
+            <div class="dashboard-title">
+                <h1>Support &amp; FAQ</h1>
+                <p>Find answers to common questions about your FASTag account</p>
+            </div>
+        </header>
+
+        <div class="dashboard-content">
+            <div class="page-grid-2col">
+
+                <!-- FAQ Accordion -->
+                <div class="card-panel" style="grid-column: span 2;">
+                    <div class="card-panel-header">
+                        <span class="card-panel-title">Frequently Asked Questions</span>
+                    </div>
+                    <div class="card-panel-body">
+                        <div class="faq-list">
+
+                            <div class="faq-item">
+                                <button class="faq-question" onclick="toggleFaq(this)">
+                                    <span>What is FASTag and how does it work?</span>
+                                    <i class="bi bi-chevron-down"></i>
+                                </button>
+                                <div class="faq-answer">
+                                    FASTag is an electronic toll collection system in India using RFID technology. A FASTag sticker is affixed to your vehicle's windshield and linked to your prepaid wallet. As you pass through a toll plaza, the toll amount is automatically deducted from your wallet — no stopping required.
+                                </div>
+                            </div>
+
+                            <div class="faq-item">
+                                <button class="faq-question" onclick="toggleFaq(this)">
+                                    <span>How do I recharge my FASTag wallet?</span>
+                                    <i class="bi bi-chevron-down"></i>
+                                </button>
+                                <div class="faq-answer">
+                                    Go to <strong>Recharge Wallet</strong> in the sidebar. You can add funds using UPI, Debit Card, Credit Card, or Net Banking. The amount is credited to your wallet instantly and is ready for use at any National Highway toll plaza.
+                                </div>
+                            </div>
+
+                            <div class="faq-item">
+                                <button class="faq-question" onclick="toggleFaq(this)">
+                                    <span>Can I register multiple vehicles under one account?</span>
+                                    <i class="bi bi-chevron-down"></i>
+                                </button>
+                                <div class="faq-answer">
+                                    Yes! You can register multiple vehicles under a single FASTag GI account. Each vehicle will have its own FASTag linked to your shared wallet balance. Go to <strong>My Vehicles</strong> to add new vehicles.
+                                </div>
+                            </div>
+
+                            <div class="faq-item">
+                                <button class="faq-question" onclick="toggleFaq(this)">
+                                    <span>What should I do if my FASTag is not being read at the toll plaza?</span>
+                                    <i class="bi bi-chevron-down"></i>
+                                </button>
+                                <div class="faq-answer">
+                                    Ensure your FASTag sticker is properly affixed to the inner side of your windshield (top-centre, behind the rear-view mirror). Check that your wallet has sufficient balance. If the problem persists, contact NHAI helpline at <strong>1033</strong> or email <strong>support@ihmcl.co.in</strong>.
+                                </div>
+                            </div>
+
+                            <div class="faq-item">
+                                <button class="faq-question" onclick="toggleFaq(this)">
+                                    <span>How long does a recharge take to reflect in my balance?</span>
+                                    <i class="bi bi-chevron-down"></i>
+                                </button>
+                                <div class="faq-answer">
+                                    Recharges via UPI and Debit/Credit Cards are typically instant. Net Banking transactions may take up to 30 minutes. Your wallet balance will update automatically once the payment is confirmed.
+                                </div>
+                            </div>
+
+                            <div class="faq-item">
+                                <button class="faq-question" onclick="toggleFaq(this)">
+                                    <span>How can I get a refund for a failed transaction?</span>
+                                    <i class="bi bi-chevron-down"></i>
+                                </button>
+                                <div class="faq-answer">
+                                    If your payment was deducted but the transaction shows as "Failed", the amount will typically be reversed to your original payment method within 5–7 business days. For recharge refunds, contact your bank. For toll-related issues, contact NHAI at 1033.
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contact Info -->
+                <div class="card-panel">
+                    <div class="card-panel-header"><span class="card-panel-title">Contact NHAI</span></div>
+                    <div class="card-panel-body">
+                        <div style="display:flex; flex-direction:column; gap:1rem;">
+                            <div class="contact-item">
+                                <div class="contact-icon"><i class="bi bi-telephone-fill"></i></div>
+                                <div>
+                                    <div style="font-size:0.78rem; font-weight:700; color:var(--gray-500); text-transform:uppercase; letter-spacing:0.05em;">Toll-Free Helpline</div>
+                                    <div style="font-size:1.1rem; font-weight:800; color:var(--navy-900); letter-spacing:-0.02em;">1033</div>
+                                    <div style="font-size:0.78rem; color:var(--gray-400);">24 × 7 available</div>
+                                </div>
+                            </div>
+                            <div class="contact-item">
+                                <div class="contact-icon"><i class="bi bi-envelope-fill"></i></div>
+                                <div>
+                                    <div style="font-size:0.78rem; font-weight:700; color:var(--gray-500); text-transform:uppercase; letter-spacing:0.05em;">Email Support</div>
+                                    <div style="font-size:0.95rem; font-weight:600; color:var(--navy-700);">support@ihmcl.co.in</div>
+                                </div>
+                            </div>
+                            <div class="contact-item">
+                                <div class="contact-icon"><i class="bi bi-globe"></i></div>
+                                <div>
+                                    <div style="font-size:0.78rem; font-weight:700; color:var(--gray-500); text-transform:uppercase; letter-spacing:0.05em;">Official Website</div>
+                                    <a href="https://fastag.ihmcl.com" target="_blank" style="font-size:0.95rem; font-weight:600; color:var(--navy-600); text-decoration:none;">fastag.ihmcl.com</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Links -->
+                <div class="card-panel">
+                    <div class="card-panel-header"><span class="card-panel-title">Quick Actions</span></div>
+                    <div class="card-panel-body">
+                        <div style="display:flex; flex-direction:column; gap:0.75rem;">
+                            <a href="{{ url_for('dash.recharge') }}" class="quick-action-link">
+                                <i class="bi bi-wallet2"></i> Recharge your wallet
+                                <i class="bi bi-arrow-right" style="margin-left:auto;"></i>
+                            </a>
+                            <a href="{{ url_for('dash.vehicles') }}" class="quick-action-link">
+                                <i class="bi bi-car-front"></i> Add a vehicle
+                                <i class="bi bi-arrow-right" style="margin-left:auto;"></i>
+                            </a>
+                            <a href="{{ url_for('dash.transactions') }}" class="quick-action-link">
+                                <i class="bi bi-receipt"></i> View transactions
+                                <i class="bi bi-arrow-right" style="margin-left:auto;"></i>
+                            </a>
+                            <a href="{{ url_for('dash.profile') }}" class="quick-action-link">
+                                <i class="bi bi-person-gear"></i> Update profile
+                                <i class="bi bi-arrow-right" style="margin-left:auto;"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleFaq(btn) {
+    const item = btn.closest('.faq-item');
+    const answer = item.querySelector('.faq-answer');
+    const icon = btn.querySelector('i');
+    const isOpen = item.classList.contains('open');
+    document.querySelectorAll('.faq-item.open').forEach(el => {
+        el.classList.remove('open');
+        el.querySelector('.faq-answer').style.maxHeight = '0';
+        el.querySelector('.faq-question i').style.transform = '';
+    });
+    if (!isOpen) {
+        item.classList.add('open');
+        answer.style.maxHeight = answer.scrollHeight + 'px';
+        icon.style.transform = 'rotate(180deg)';
+    }
+}
+document.addEventListener('DOMContentLoaded', () => {
+    const sidebar = document.getElementById('sidebar');
+    const toggle  = document.getElementById('sidebarToggle');
+    const KEY     = 'fastagSidebarCollapsed';
+    if (localStorage.getItem(KEY) === 'true') sidebar.classList.add('collapsed');
+    toggle.addEventListener('click', () => {
+        sidebar.classList.toggle('collapsed');
+        localStorage.setItem(KEY, sidebar.classList.contains('collapsed'));
+    });
+});
+</script>
+{% endblock %}

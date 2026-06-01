@@ -1,0 +1,430 @@
+{% extends "base.html" %}
+{% block title %}KYC Verification — FASTag Portal{% endblock %}
+
+{% block content %}
+<div class="dashboard-layout">
+    {% set active_page = 'kyc' %}
+    {% include 'dashboard/_sidebar.html' %}
+
+    <main class="dashboard-main">
+        <header class="dashboard-header">
+            <div class="dashboard-title">
+                <h1>KYC Verification</h1>
+                <p>Complete your Know Your Customer details to activate full FASTag benefits</p>
+            </div>
+            <div class="header-actions">
+                {% if record %}
+                <div class="kyc-header-status kyc-status-{{ record.status }}">
+                    {% if record.status == 'not_submitted' %}
+                    <i class="bi bi-dash-circle"></i> Not Submitted
+                    {% elif record.status == 'pending' %}
+                    <i class="bi bi-hourglass-split"></i> Pending Verification
+                    {% elif record.status == 'verified' %}
+                    <i class="bi bi-patch-check-fill"></i> KYC Verified
+                    {% elif record.status == 'rejected' %}
+                    <i class="bi bi-x-circle-fill"></i> Rejected
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </header>
+
+        <div class="dashboard-content">
+
+            {# ── Status Banner ── #}
+            {% if record %}
+                {% if record.status == 'pending' %}
+                <div class="kyc-banner kyc-banner-pending">
+                    <i class="bi bi-hourglass-split"></i>
+                    <div>
+                        <strong>Your KYC is under review.</strong>
+                        Submitted on {{ record.submitted_at.strftime('%d %b %Y at %I:%M %p') if record.submitted_at else 'N/A' }}.
+                        Verification typically takes 24–48 hours.
+                    </div>
+                </div>
+                {% elif record.status == 'verified' %}
+                <div class="kyc-banner kyc-banner-verified">
+                    <i class="bi bi-patch-check-fill"></i>
+                    <div>
+                        <strong>KYC Verified!</strong>
+                        Your identity was successfully verified on {{ record.verified_at.strftime('%d %b %Y') if record.verified_at else 'N/A' }}.
+                        All FASTag features are now fully active.
+                    </div>
+                </div>
+                {% elif record.status == 'rejected' %}
+                <div class="kyc-banner kyc-banner-rejected">
+                    <i class="bi bi-x-circle-fill"></i>
+                    <div>
+                        <strong>KYC Rejected.</strong>
+                        {{ record.remarks or 'Please review and resubmit your details.' }}
+                        You can update and resubmit below.
+                    </div>
+                </div>
+                {% endif %}
+            {% else %}
+            <div class="kyc-banner kyc-banner-info">
+                <i class="bi bi-info-circle-fill"></i>
+                <div>
+                    <strong>Complete your KYC to unlock full access.</strong>
+                    Without KYC, your FASTag account has limited functionality as per NHAI regulations.
+                </div>
+            </div>
+            {% endif %}
+
+            {# ── Progress Steps ── #}
+            <div class="kyc-steps">
+                <div class="kyc-step {{ 'done' if record and record.status in ['pending','verified','rejected'] else 'active' if not record }}">
+                    <div class="kyc-step-circle">
+                        {% if record and record.status in ['pending','verified'] %}<i class="bi bi-check-lg"></i>
+                        {% else %}1{% endif %}
+                    </div>
+                    <span class="kyc-step-label">Personal Info</span>
+                </div>
+                <div class="kyc-step-line"></div>
+                <div class="kyc-step {{ 'done' if record and record.status in ['pending','verified','rejected'] else 'active' if not record }}">
+                    <div class="kyc-step-circle">
+                        {% if record and record.status in ['pending','verified'] %}<i class="bi bi-check-lg"></i>
+                        {% else %}2{% endif %}
+                    </div>
+                    <span class="kyc-step-label">ID Proof</span>
+                </div>
+                <div class="kyc-step-line"></div>
+                <div class="kyc-step {{ 'done' if record and record.status in ['pending','verified','rejected'] else 'active' if not record }}">
+                    <div class="kyc-step-circle">
+                        {% if record and record.status in ['pending','verified'] %}<i class="bi bi-check-lg"></i>
+                        {% else %}3{% endif %}
+                    </div>
+                    <span class="kyc-step-label">Address</span>
+                </div>
+                <div class="kyc-step-line"></div>
+                <div class="kyc-step {{ 'done' if record and record.status == 'verified' else ('active' if record and record.status == 'pending' else '') }}">
+                    <div class="kyc-step-circle">
+                        {% if record and record.status == 'verified' %}<i class="bi bi-check-lg"></i>
+                        {% else %}4{% endif %}
+                    </div>
+                    <span class="kyc-step-label">Verification</span>
+                </div>
+            </div>
+
+            {# ── Main Form / View ── #}
+            {% set is_locked = True if record and record.status == 'verified' else False %}
+
+            <form method="POST" action="{{ url_for('dash.kyc') }}" novalidate>
+                {{ form.hidden_tag() }}
+
+                <div class="kyc-grid">
+
+                    {# ─── Left column ─── #}
+                    <div style="display:flex; flex-direction:column; gap:1.5rem;">
+
+                        {# Section 1 – Personal Information #}
+                        <div class="card-panel">
+                            <div class="card-panel-header">
+                                <span class="card-panel-title">
+                                    <i class="bi bi-person-vcard" style="color:var(--navy-500); margin-right:0.35rem;"></i>
+                                    Section 1 — Personal Information
+                                </span>
+                                {% if record and record.status == 'verified' %}
+                                <span class="kyc-section-verified"><i class="bi bi-patch-check-fill"></i> Verified</span>
+                                {% endif %}
+                            </div>
+                            <div class="card-panel-body">
+
+                                <div class="form-2col">
+                                    <div class="field-row">
+                                        <label class="field-label"><i class="bi bi-person"></i> Full Name (as per ID)</label>
+                                        {{ form.full_name(class='form-control', id='full_name',
+                                            placeholder='As on Aadhaar / PAN / Passport',
+                                            disabled=is_locked) }}
+                                        {% for e in form.full_name.errors %}
+                                        <div class="field-error"><i class="bi bi-exclamation-circle"></i> {{ e }}</div>
+                                        {% endfor %}
+                                    </div>
+
+                                    <div class="field-row">
+                                        <label class="field-label"><i class="bi bi-calendar3"></i> Date of Birth</label>
+                                        {{ form.date_of_birth(class='form-control', id='dob',
+                                            disabled=is_locked) }}
+                                        {% for e in form.date_of_birth.errors %}
+                                        <div class="field-error"><i class="bi bi-exclamation-circle"></i> {{ e }}</div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+
+                                <div class="form-2col">
+                                    <div class="field-row">
+                                        <label class="field-label"><i class="bi bi-gender-ambiguous"></i> Gender</label>
+                                        {{ form.gender(class='form-control', id='gender', disabled=is_locked) }}
+                                        {% for e in form.gender.errors %}
+                                        <div class="field-error"><i class="bi bi-exclamation-circle"></i> {{ e }}</div>
+                                        {% endfor %}
+                                    </div>
+
+                                    <div class="field-row">
+                                        <label class="field-label"><i class="bi bi-flag"></i> Nationality</label>
+                                        {{ form.nationality(class='form-control', id='nationality',
+                                            placeholder='e.g. Indian',
+                                            disabled=is_locked) }}
+                                        {% for e in form.nationality.errors %}
+                                        <div class="field-error"><i class="bi bi-exclamation-circle"></i> {{ e }}</div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        {# Section 3 – Address Details #}
+                        <div class="card-panel">
+                            <div class="card-panel-header">
+                                <span class="card-panel-title">
+                                    <i class="bi bi-geo-alt" style="color:var(--navy-500); margin-right:0.35rem;"></i>
+                                    Section 3 — Address Details
+                                </span>
+                                {% if record and record.status == 'verified' %}
+                                <span class="kyc-section-verified"><i class="bi bi-patch-check-fill"></i> Verified</span>
+                                {% endif %}
+                            </div>
+                            <div class="card-panel-body">
+
+                                <div class="field-row">
+                                    <label class="field-label"><i class="bi bi-house"></i> Address Line 1</label>
+                                    {{ form.address_line1(class='form-control', id='addr1',
+                                        placeholder='Flat / Door No., Building / Society Name, Street',
+                                        disabled=is_locked) }}
+                                    {% for e in form.address_line1.errors %}
+                                    <div class="field-error"><i class="bi bi-exclamation-circle"></i> {{ e }}</div>
+                                    {% endfor %}
+                                </div>
+
+                                <div class="field-row">
+                                    <label class="field-label"><i class="bi bi-signpost"></i> Address Line 2 <span style="font-weight:400; color:var(--gray-400);">(Optional)</span></label>
+                                    {{ form.address_line2(class='form-control', id='addr2',
+                                        placeholder='Landmark, Area / Locality',
+                                        disabled=is_locked) }}
+                                    {% for e in form.address_line2.errors %}
+                                    <div class="field-error"><i class="bi bi-exclamation-circle"></i> {{ e }}</div>
+                                    {% endfor %}
+                                </div>
+
+                                <div class="form-3col">
+                                    <div class="field-row">
+                                        <label class="field-label"><i class="bi bi-building"></i> City / District</label>
+                                        {{ form.city(class='form-control', id='city',
+                                            placeholder='e.g. Pune',
+                                            disabled=is_locked) }}
+                                        {% for e in form.city.errors %}
+                                        <div class="field-error"><i class="bi bi-exclamation-circle"></i> {{ e }}</div>
+                                        {% endfor %}
+                                    </div>
+
+                                    <div class="field-row">
+                                        <label class="field-label"><i class="bi bi-map"></i> State / UT</label>
+                                        {{ form.state(class='form-control', id='state', disabled=is_locked) }}
+                                        {% for e in form.state.errors %}
+                                        <div class="field-error"><i class="bi bi-exclamation-circle"></i> {{ e }}</div>
+                                        {% endfor %}
+                                    </div>
+
+                                    <div class="field-row">
+                                        <label class="field-label"><i class="bi bi-mailbox"></i> PIN Code</label>
+                                        {{ form.pin_code(class='form-control', id='pin',
+                                            placeholder='6-digit PIN',
+                                            maxlength='6',
+                                            disabled=is_locked) }}
+                                        {% for e in form.pin_code.errors %}
+                                        <div class="field-error"><i class="bi bi-exclamation-circle"></i> {{ e }}</div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+
+                                <div class="field-row">
+                                    <label class="field-label"><i class="bi bi-globe-asia-australia"></i> Country</label>
+                                    {{ form.country(class='form-control', id='country',
+                                        placeholder='Country of residence',
+                                        disabled=is_locked) }}
+                                    {% for e in form.country.errors %}
+                                    <div class="field-error"><i class="bi bi-exclamation-circle"></i> {{ e }}</div>
+                                    {% endfor %}
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </div>
+
+                    {# ─── Right column ─── #}
+                    <div style="display:flex; flex-direction:column; gap:1.5rem;">
+
+                        {# Section 2 – Identity Proof #}
+                        <div class="card-panel">
+                            <div class="card-panel-header">
+                                <span class="card-panel-title">
+                                    <i class="bi bi-card-text" style="color:var(--navy-500); margin-right:0.35rem;"></i>
+                                    Section 2 — Identity Proof
+                                </span>
+                                {% if record and record.status == 'verified' %}
+                                <span class="kyc-section-verified"><i class="bi bi-patch-check-fill"></i> Verified</span>
+                                {% endif %}
+                            </div>
+                            <div class="card-panel-body">
+
+                                <div class="field-row">
+                                    <label class="field-label"><i class="bi bi-file-earmark-person"></i> ID Proof Type</label>
+                                    {{ form.id_type(class='form-control', id='id_type',
+                                        disabled=is_locked,
+                                        onchange='updateIdHint(this)') }}
+                                    {% for e in form.id_type.errors %}
+                                    <div class="field-error"><i class="bi bi-exclamation-circle"></i> {{ e }}</div>
+                                    {% endfor %}
+                                </div>
+
+                                <div class="field-row">
+                                    <label class="field-label"><i class="bi bi-123"></i> ID Number</label>
+                                    {{ form.id_number(class='form-control', id='id_number',
+                                        placeholder='Enter your ID number',
+                                        disabled=is_locked) }}
+                                    <div class="id-hint" id="idHint" style="font-size:0.75rem; color:var(--gray-400); margin-top:0.35rem;"></div>
+                                    {% for e in form.id_number.errors %}
+                                    <div class="field-error"><i class="bi bi-exclamation-circle"></i> {{ e }}</div>
+                                    {% endfor %}
+                                </div>
+
+                                {# ID format reference card #}
+                                <div class="kyc-id-ref">
+                                    <div class="kyc-id-ref-title"><i class="bi bi-lightbulb"></i> Format Reference</div>
+                                    <table class="kyc-id-table">
+                                        <tr><td>Aadhaar</td><td>12 digits</td></tr>
+                                        <tr><td>PAN</td><td>ABCDE1234F (10 chars)</td></tr>
+                                        <tr><td>Passport</td><td>A1234567 (8 chars)</td></tr>
+                                        <tr><td>Driving License</td><td>DL-XXXXXXXXXX</td></tr>
+                                        <tr><td>Voter ID</td><td>ABC1234567 (10 chars)</td></tr>
+                                    </table>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        {# Declaration & Submit #}
+                        {% if not is_locked %}
+                        <div class="card-panel">
+                            <div class="card-panel-header">
+                                <span class="card-panel-title">
+                                    <i class="bi bi-pencil-square" style="color:var(--navy-500); margin-right:0.35rem;"></i>
+                                    Declaration
+                                </span>
+                            </div>
+                            <div class="card-panel-body">
+                                <div class="kyc-declaration">
+                                    <label style="display:flex; align-items:flex-start; gap:0.75rem; cursor:pointer;">
+                                        <input type="checkbox" id="kycDeclaration" style="margin-top:0.2rem; flex-shrink:0; width:16px; height:16px; accent-color:var(--navy-600);" required>
+                                        <span style="font-size:0.875rem; color:var(--gray-700); line-height:1.6;">
+                                            I hereby declare that the information provided above is true, correct, and complete to the best of my knowledge.
+                                            I understand that providing false information may result in the suspension of my FASTag account.
+                                        </span>
+                                    </label>
+                                </div>
+
+                                <button type="submit" class="btn-kyc-submit" id="kycSubmitBtn" disabled>
+                                    <i class="bi bi-shield-fill-check"></i>
+                                    {% if record and record.status == 'rejected' %}
+                                    Resubmit KYC for Verification
+                                    {% elif record and record.status == 'pending' %}
+                                    Update &amp; Resubmit KYC
+                                    {% else %}
+                                    Submit KYC for Verification
+                                    {% endif %}
+                                </button>
+
+                                <div style="display:flex; align-items:center; gap:0.5rem; margin-top:0.875rem; padding:0.75rem; background:var(--navy-50); border-radius:var(--r-sm);">
+                                    <i class="bi bi-lock-fill" style="color:var(--navy-500); font-size:0.875rem;"></i>
+                                    <span style="font-size:0.75rem; color:var(--gray-600);">Your data is encrypted and handled as per India's IT Act and NHAI's data protection policy.</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {# Verified summary card #}
+                        {% if is_locked %}
+                        <div class="card-panel">
+                            <div class="card-panel-header">
+                                <span class="card-panel-title">Verification Summary</span>
+                            </div>
+                            <div class="card-panel-body">
+                                <div style="display:flex; flex-direction:column; gap:0.875rem;">
+                                    <div class="info-row">
+                                        <span class="info-label">KYC Status</span>
+                                        <span class="info-value" style="color:var(--success); display:flex; align-items:center; gap:0.4rem;">
+                                            <i class="bi bi-patch-check-fill"></i> Verified
+                                        </span>
+                                    </div>
+                                    <div class="info-row">
+                                        <span class="info-label">Submitted On</span>
+                                        <span class="info-value">{{ record.submitted_at.strftime('%d %b %Y') if record.submitted_at else 'N/A' }}</span>
+                                    </div>
+                                    <div class="info-row">
+                                        <span class="info-label">Verified On</span>
+                                        <span class="info-value">{{ record.verified_at.strftime('%d %b %Y') if record.verified_at else 'N/A' }}</span>
+                                    </div>
+                                    <div class="info-row">
+                                        <span class="info-label">ID Type Used</span>
+                                        <span class="info-value">{{ record.id_type or 'N/A' }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                    </div>
+                </div>
+
+            </form>
+
+        </div>
+    </main>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const ID_HINTS = {
+    'Aadhaar':         'Enter your 12-digit Aadhaar number (no spaces or dashes)',
+    'PAN':             'Enter your 10-character PAN (e.g. ABCDE1234F)',
+    'Passport':        'Enter your 8-character Passport number (e.g. A1234567)',
+    'Driving License': 'Enter your Driving License number as on the card',
+    'Voter ID':        'Enter your 10-character Voter ID / EPIC number',
+};
+
+function updateIdHint(select) {
+    const hint  = document.getElementById('idHint');
+    const input = document.getElementById('id_number');
+    hint.textContent = ID_HINTS[select.value] || '';
+    input.placeholder = select.value ? 'Enter your ' + select.value + ' number' : 'Enter your ID number';
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Sidebar collapse
+    const sidebar = document.getElementById('sidebar');
+    const toggle  = document.getElementById('sidebarToggle');
+    const KEY     = 'fastagSidebarCollapsed';
+    if (localStorage.getItem(KEY) === 'true') sidebar.classList.add('collapsed');
+    toggle.addEventListener('click', () => {
+        sidebar.classList.toggle('collapsed');
+        localStorage.setItem(KEY, sidebar.classList.contains('collapsed'));
+    });
+
+    // Declaration checkbox enables submit button
+    const checkbox  = document.getElementById('kycDeclaration');
+    const submitBtn = document.getElementById('kycSubmitBtn');
+    if (checkbox && submitBtn) {
+        checkbox.addEventListener('change', () => {
+            submitBtn.disabled = !checkbox.checked;
+        });
+    }
+
+    // Auto-hint on page load if id_type is pre-filled
+    const idTypeSelect = document.getElementById('id_type');
+    if (idTypeSelect && idTypeSelect.value) updateIdHint(idTypeSelect);
+});
+</script>
+{% endblock %}

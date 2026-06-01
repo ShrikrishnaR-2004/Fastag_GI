@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% block title %}Recharge Wallet — FASTag Portal{% endblock %}
+
+{% block content %}
+<div class="dashboard-layout">
+    {% set active_page = 'recharge' %}
+    {% include 'dashboard/_sidebar.html' %}
+
+    <main class="dashboard-main">
+        <header class="dashboard-header">
+            <div class="dashboard-title">
+                <h1>Recharge Wallet</h1>
+                <p>Add funds to your FASTag wallet instantly</p>
+            </div>
+        </header>
+
+        <div class="dashboard-content">
+            <div class="page-grid-2col">
+
+                <!-- Recharge Form -->
+                <div class="card-panel">
+                    <div class="card-panel-header">
+                        <span class="card-panel-title">Add Funds</span>
+                    </div>
+                    <div class="card-panel-body">
+
+                        <!-- Quick Amounts -->
+                        <div style="margin-bottom:1.25rem;">
+                            <div class="field-label" style="margin-bottom:0.75rem;">Quick Select Amount</div>
+                            <div class="quick-amounts">
+                                <button class="quick-amt" data-amt="200">₹200</button>
+                                <button class="quick-amt" data-amt="500">₹500</button>
+                                <button class="quick-amt" data-amt="1000">₹1,000</button>
+                                <button class="quick-amt" data-amt="2000">₹2,000</button>
+                            </div>
+                        </div>
+
+                        <form method="POST" action="{{ url_for('dash.recharge') }}" novalidate>
+                            {{ form.hidden_tag() }}
+
+                            <div class="field-row">
+                                <label class="field-label">
+                                    <i class="bi bi-currency-rupee"></i> Enter Amount (₹)
+                                </label>
+                                <div class="input-shell">
+                                    {{ form.amount(class='form-control', placeholder='e.g. 500', id='rechargeAmount', style='font-size:1.1rem; font-weight:700;') }}
+                                </div>
+                                {% for e in form.amount.errors %}
+                                <div class="field-error"><i class="bi bi-exclamation-circle"></i> {{ e }}</div>
+                                {% endfor %}
+                                <div style="font-size:0.75rem; color:var(--gray-400); margin-top:0.35rem;">Min ₹100 · Max ₹50,000</div>
+                            </div>
+
+                            <div class="field-row">
+                                <label class="field-label">
+                                    <i class="bi bi-credit-card"></i> Payment Mode
+                                </label>
+                                {{ form.payment_mode(class='form-control', id='paymentMode') }}
+                                {% for e in form.payment_mode.errors %}
+                                <div class="field-error"><i class="bi bi-exclamation-circle"></i> {{ e }}</div>
+                                {% endfor %}
+                            </div>
+
+                            <button type="submit" class="btn-primary-auth" style="margin-top:0.5rem;">
+                                <i class="bi bi-shield-check"></i> Proceed to Pay
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Wallet Info Card -->
+                <div style="display:flex; flex-direction:column; gap:1.25rem;">
+                    <div class="card-panel">
+                        <div class="card-panel-header">
+                            <span class="card-panel-title">Current Balance</span>
+                        </div>
+                        <div class="card-panel-body" style="text-align:center; padding:2rem;">
+                            <div style="font-size:0.75rem; font-weight:700; color:var(--gray-500); text-transform:uppercase; letter-spacing:0.07em; margin-bottom:0.5rem;">Available Balance</div>
+                            <div style="font-size:2.5rem; font-weight:900; color:var(--navy-900); letter-spacing:-0.04em;">₹{{ '%.2f'|format(wallet_balance) }}</div>
+                            {% if wallet_balance < 200 %}
+                            <div style="margin-top:0.75rem; font-size:0.82rem; color:var(--danger); font-weight:500;">
+                                <i class="bi bi-exclamation-triangle-fill"></i> Low balance — recharge recommended
+                            </div>
+                            {% else %}
+                            <div style="margin-top:0.75rem; font-size:0.82rem; color:var(--success); font-weight:500;">
+                                <i class="bi bi-check-circle-fill"></i> Sufficient balance
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="card-panel">
+                        <div class="card-panel-header">
+                            <span class="card-panel-title">Recharge Benefits</span>
+                        </div>
+                        <div class="card-panel-body">
+                            <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:0.75rem;">
+                                <li style="display:flex; align-items:flex-start; gap:0.625rem; font-size:0.875rem; color:var(--gray-700);">
+                                    <i class="bi bi-lightning-fill" style="color:var(--gold-500); margin-top:0.15rem; flex-shrink:0;"></i>
+                                    Instant wallet top-up — no delays
+                                </li>
+                                <li style="display:flex; align-items:flex-start; gap:0.625rem; font-size:0.875rem; color:var(--gray-700);">
+                                    <i class="bi bi-shield-check" style="color:var(--success); margin-top:0.15rem; flex-shrink:0;"></i>
+                                    Secured by NHAI's payment gateway
+                                </li>
+                                <li style="display:flex; align-items:flex-start; gap:0.625rem; font-size:0.875rem; color:var(--gray-700);">
+                                    <i class="bi bi-arrow-repeat" style="color:var(--navy-500); margin-top:0.15rem; flex-shrink:0;"></i>
+                                    Used automatically at all toll plazas
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const sidebar = document.getElementById('sidebar');
+    const toggle  = document.getElementById('sidebarToggle');
+    const KEY     = 'fastagSidebarCollapsed';
+    if (localStorage.getItem(KEY) === 'true') sidebar.classList.add('collapsed');
+    toggle.addEventListener('click', () => {
+        sidebar.classList.toggle('collapsed');
+        localStorage.setItem(KEY, sidebar.classList.contains('collapsed'));
+    });
+
+    // Quick amount buttons
+    document.querySelectorAll('.quick-amt').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.getElementById('rechargeAmount').value = btn.dataset.amt;
+            document.querySelectorAll('.quick-amt').forEach(b => b.classList.remove('quick-amt-active'));
+            btn.classList.add('quick-amt-active');
+        });
+    });
+});
+</script>
+{% endblock %}

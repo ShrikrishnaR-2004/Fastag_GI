@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block title %}My Vehicles — FASTag Portal{% endblock %}
+
+{% block content %}
+<div class="dashboard-layout">
+    {% set active_page = 'vehicles' %}
+    {% include 'dashboard/_sidebar.html' %}
+
+    <main class="dashboard-main">
+        <header class="dashboard-header">
+            <div class="dashboard-title">
+                <h1>My Vehicles</h1>
+                <p>Manage your registered FASTag vehicles</p>
+            </div>
+            <div class="header-actions">
+                <a href="{{ url_for('dash.recharge') }}" class="btn-recharge">
+                    <i class="bi bi-plus-lg"></i> Recharge Wallet
+                </a>
+            </div>
+        </header>
+
+        <div class="dashboard-content">
+            <div class="page-grid-2col">
+
+                <!-- Add Vehicle Form -->
+                <div class="card-panel">
+                    <div class="card-panel-header">
+                        <span class="card-panel-title">Register New Vehicle</span>
+                    </div>
+                    <div class="card-panel-body">
+                        <form method="POST" action="{{ url_for('dash.vehicles') }}" novalidate>
+                            {{ form.hidden_tag() }}
+
+                            <div class="field-row">
+                                <label class="field-label">
+                                    <i class="bi bi-card-text"></i> Registration Number
+                                </label>
+                                {{ form.registration_number(class='form-control', placeholder='e.g. TN XX AB 1234', id='reg_number') }}
+                                {% for e in form.registration_number.errors %}
+                                <div class="field-error"><i class="bi bi-exclamation-circle"></i> {{ e }}</div>
+                                {% endfor %}
+                                <div style="font-size:0.75rem; color:var(--gray-400); margin-top:0.35rem;">Enter the number exactly as on your RC book.</div>
+                            </div>
+
+                            <div class="field-row">
+                                <label class="field-label">
+                                    <i class="bi bi-truck"></i> Vehicle Type
+                                </label>
+                                {{ form.vehicle_type(class='form-control', id='vehicle_type') }}
+                                {% for e in form.vehicle_type.errors %}
+                                <div class="field-error"><i class="bi bi-exclamation-circle"></i> {{ e }}</div>
+                                {% endfor %}
+                            </div>
+
+                            <button type="submit" class="btn-primary-auth" style="margin-top:0.5rem;">
+                                <i class="bi bi-plus-circle"></i> Register Vehicle
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Registered Vehicles List -->
+                <div class="card-panel">
+                    <div class="card-panel-header">
+                        <span class="card-panel-title">Registered Vehicles ({{ user_vehicles | length }})</span>
+                    </div>
+                    <div class="card-panel-body no-pad">
+                        {% if user_vehicles %}
+                        <div class="vehicle-list-full">
+                            {% for v in user_vehicles %}
+                            <div class="vehicle-row">
+                                <div class="vehicle-row-icon">
+                                    {% if v.vehicle_type == 'Truck' %}
+                                    <i class="bi bi-truck"></i>
+                                    {% elif v.vehicle_type == 'Bus' %}
+                                    <i class="bi bi-bus-front"></i>
+                                    {% else %}
+                                    <i class="bi bi-car-front"></i>
+                                    {% endif %}
+                                </div>
+                                <div class="vehicle-row-info">
+                                    <span class="vehicle-plate">{{ v.registration_number }}</span>
+                                    <span class="vehicle-type-tag">{{ v.vehicle_type }}</span>
+                                </div>
+                                <div class="vehicle-row-meta">
+                                    <span class="vehicle-status {{ '' if v.is_active else 'inactive' }}">
+                                        {{ 'Active' if v.is_active else 'Inactive' }}
+                                    </span>
+                                    <span class="vehicle-since">Since {{ v.created_at.strftime('%b %Y') }}</span>
+                                </div>
+                                <form method="POST" action="{{ url_for('dash.toggle_vehicle', vehicle_id=v.id) }}" style="margin-left:auto;">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="btn-toggle {{ 'btn-toggle-deactivate' if v.is_active else 'btn-toggle-activate' }}">
+                                        {{ 'Deactivate' if v.is_active else 'Activate' }}
+                                    </button>
+                                </form>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="empty-state">
+                            <i class="bi bi-car-front"></i>
+                            <p>No vehicles registered yet.<br>Use the form to add your first vehicle.</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const sidebar = document.getElementById('sidebar');
+    const toggle  = document.getElementById('sidebarToggle');
+    const KEY     = 'fastagSidebarCollapsed';
+    if (localStorage.getItem(KEY) === 'true') sidebar.classList.add('collapsed');
+    toggle.addEventListener('click', () => {
+        sidebar.classList.toggle('collapsed');
+        localStorage.setItem(KEY, sidebar.classList.contains('collapsed'));
+    });
+});
+</script>
+{% endblock %}

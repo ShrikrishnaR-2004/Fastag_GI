@@ -1,0 +1,286 @@
+{% extends "base.html" %}
+{% block title %}Sign In — FASTag Portal{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+
+    <!-- ═══════════════ LEFT PANEL ═══════════════ -->
+    <div class="auth-left">
+        <div class="auth-left-bg"></div>
+        <div class="auth-left-grid"></div>
+        <div class="blob blob-a"></div>
+        <div class="blob blob-b"></div>
+        <div class="blob blob-c"></div>
+
+        <div class="auth-left-inner">
+
+            <!-- Brand -->
+            <div class="brand-mark">
+                <div class="brand-icon-wrap">
+                    <svg width="26" height="26" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M16 4L4 10v12l12 6 12-6V10L16 4z" stroke="white" stroke-width="1.8" stroke-linejoin="round" fill="none" opacity=".6"/>
+                        <path d="M16 4v18M4 10l12 6 12-6" stroke="white" stroke-width="1.8" stroke-linejoin="round"/>
+                        <circle cx="16" cy="16" r="3.5" fill="white" opacity=".9"/>
+                    </svg>
+                </div>
+                <div class="brand-text-wrap">
+                    <div class="brand-name-main">FASTag <span class="brand-name-sub">Portal</span></div>
+                    <!-- <div class="brand-gov-label">NHAI · Government of India</div> -->
+                </div>
+            </div>
+
+            <!-- Hero -->
+            <div class="auth-hero">
+                <div class="auth-badge">
+                    <i class="bi bi-shield-check-fill"></i>
+                    100% Secure &amp; Encrypted
+                </div>
+                <h1 class="auth-hero-title">
+                    Your Toll-Free<br><span>Travel Companion</span>
+                </h1>
+                <p class="auth-hero-desc">
+                    Manage your FASTag, recharge wallet, view transactions, and track toll spending — all from one secure dashboard.
+                </p>
+
+                <div class="feature-cards">
+                    <div class="feature-card">
+                        <div class="fc-icon fc-icon-gold"><i class="bi bi-wallet2"></i></div>
+                        <div>
+                            <div class="fc-title">Instant Recharge</div>
+                            <div class="fc-desc">UPI, Cards &amp; Net Banking</div>
+                        </div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="fc-icon fc-icon-blue"><i class="bi bi-receipt-cutoff"></i></div>
+                        <div>
+                            <div class="fc-title">Transaction History</div>
+                            <div class="fc-desc">Download PDF / Excel statements</div>
+                        </div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="fc-icon fc-icon-green"><i class="bi bi-bell-fill"></i></div>
+                        <div>
+                            <div class="fc-title">Live SMS Alerts</div>
+                            <div class="fc-desc">Every toll deduction, instantly</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="auth-trust">
+                    <!-- <div class="trust-pill"><i class="bi bi-lock-fill"></i> 256-bit SSL</div>
+                    <div class="trust-sep">·</div>
+                    <div class="trust-pill"><i class="bi bi-patch-check-fill"></i> NHAI Certified</div>
+                    <div class="trust-sep">·</div>
+                    <div class="trust-pill"><i class="bi bi-people-fill"></i> 8 Cr+ Users</div> -->
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ═══════════════ RIGHT PANEL ═══════════════ -->
+    <div class="auth-right">
+
+        <!-- Top bar -->
+        <div class="auth-right-topbar">
+            <a href="#" class="topbar-brand">
+                <div class="topbar-icon">
+                    <svg width="18" height="18" viewBox="0 0 32 32" fill="none">
+                        <path d="M16 4L4 10v12l12 6 12-6V10L16 4z" stroke="#1d4280" stroke-width="2" stroke-linejoin="round" fill="none"/>
+                        <circle cx="16" cy="16" r="3" fill="#1d4280"/>
+                    </svg>
+                </div>
+                <span class="topbar-brand-name">FASTag <span>Portal</span></span>
+            </a>
+            <div class="topbar-meta">
+                <i class="bi bi-shield-fill-check"></i>
+                Secured Connection
+            </div>
+        </div>
+
+        <!-- Form area -->
+        <div class="auth-form-wrap">
+            <div class="auth-form-card">
+
+                <!-- Header -->
+                <div class="form-kicker">
+                    <div class="form-kicker-dot"></div>
+                    Account Access
+                </div>
+                <h2 class="form-h1">Welcome back</h2>
+                <p class="form-lead">Sign in to your FASTag account to continue.</p>
+
+                <div class="section-divider"></div>
+
+                <!-- ── Tabs: Password / OTP ── -->
+                <div class="auth-tabs" id="loginTabs" role="tablist">
+                    <button class="auth-tab active" id="pwd-tab"
+                            data-bs-toggle="tab" data-bs-target="#pwd-pane"
+                            type="button" role="tab" aria-selected="true">
+                        <i class="bi bi-key-fill"></i> Password Login
+                    </button>
+                    <button class="auth-tab" id="otp-tab"
+                            data-bs-toggle="tab" data-bs-target="#otp-pane"
+                            type="button" role="tab" aria-selected="false">
+                        <i class="bi bi-phone-fill"></i> OTP Login
+                    </button>
+                </div>
+
+                <div class="tab-content">
+
+                    <!-- ── PASSWORD PANE ── -->
+                    <div class="tab-pane fade show active" id="pwd-pane" role="tabpanel">
+                        <form id="loginForm" method="POST" action="{{ url_for('auth.login') }}" novalidate>
+                            {{ form.hidden_tag() }}
+
+                            <!-- Email / Mobile -->
+                            <div class="field-row">
+                                <label for="loginId" class="field-label">
+                                    <i class="bi bi-person"></i> Email or Mobile
+                                </label>
+                                <div class="input-shell">
+                                    {{ form.login_id(
+                                        class="form-control",
+                                        id="loginId",
+                                        placeholder="Email address or 10-digit mobile",
+                                        autocomplete="username"
+                                    ) }}
+                                </div>
+                                {% for error in form.login_id.errors %}
+                                    <div class="field-error"><i class="bi bi-exclamation-circle"></i>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+
+                            <!-- Password -->
+                            <div class="field-row">
+                                <label for="password" class="field-label">
+                                    <i class="bi bi-lock"></i> Password
+                                </label>
+                                <div class="input-shell has-action">
+                                    {{ form.password(
+                                        class="form-control",
+                                        id="password",
+                                        placeholder="Enter your password",
+                                        autocomplete="current-password"
+                                    ) }}
+                                    <button type="button" class="input-action" id="eyeBtn" title="Toggle visibility">
+                                        <i class="bi bi-eye" id="eyeIcon"></i>
+                                    </button>
+                                </div>
+                                {% for error in form.password.errors %}
+                                    <div class="field-error"><i class="bi bi-exclamation-circle"></i>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+
+                            <!-- Remember + Forgot -->
+                            <div class="check-row">
+                                <label class="check-label">
+                                    {{ form.remember_me(class="check-native", id="rememberMe") }}
+                                    <span class="check-text">Keep me signed in</span>
+                                </label>
+                                <a href="{{ url_for('auth.forgot_password') }}" class="link-subtle">Forgot password?</a>
+                            </div>
+
+                            <!-- Visual CAPTCHA -->
+                            <div class="captcha-widget" id="captchaWidget">
+                                <div class="captcha-header">
+                                    <span class="captcha-header-label">
+                                        <i class="bi bi-shield-check"></i> Security Check
+                                    </span>
+                                    <span class="captcha-hint">Type the characters shown</span>
+                                </div>
+                                <div class="captcha-body">
+                                    <div class="captcha-canvas-wrap">
+                                        <canvas id="captchaCanvas" width="200" height="64"></canvas>
+                                        <button type="button" class="captcha-refresh" id="captchaRefresh"
+                                                title="New code" aria-label="Refresh CAPTCHA">
+                                            <i class="bi bi-arrow-clockwise"></i>
+                                        </button>
+                                    </div>
+                                    <div class="captcha-input-wrap">
+                                        <input type="text" id="captchaInput" class="captcha-input"
+                                               placeholder="Enter code" maxlength="6"
+                                               autocomplete="off" spellcheck="false">
+                                        <span class="captcha-status" id="captchaStatus"></span>
+                                    </div>
+                                </div>
+                                <div class="captcha-error" id="captchaError">
+                                    <i class="bi bi-exclamation-circle-fill"></i>
+                                    <span id="captchaErrorText">Incorrect — please try again.</span>
+                                </div>
+                            </div>
+
+                            <!-- Submit -->
+                            {{ form.submit(class="btn-primary-auth", id="signinBtn") }}
+
+                        </form>
+                    </div>
+
+                    <!-- ── OTP PANE ── -->
+                    <div class="tab-pane fade" id="otp-pane" role="tabpanel">
+                        <form id="otpForm" novalidate>
+
+                            <div class="field-row">
+                                <label for="otpMobile" class="field-label">
+                                    <i class="bi bi-phone"></i> Registered Mobile
+                                </label>
+                                <div class="input-shell has-cta">
+                                    <input type="tel" id="otpMobile" class="form-control"
+                                           placeholder="10-digit mobile number" maxlength="10">
+                                    <button type="button" class="input-cta" id="getOtpBtn">Get OTP</button>
+                                </div>
+                            </div>
+
+                            <div class="field-row" id="otpInputGroup" style="display:none;">
+                                <label class="field-label">
+                                    <i class="bi bi-shield-lock"></i> Enter OTP
+                                </label>
+                                <div class="otp-grid" id="otpBoxes">
+                                    <input class="otp-cell" type="text" maxlength="1" inputmode="numeric">
+                                    <input class="otp-cell" type="text" maxlength="1" inputmode="numeric">
+                                    <input class="otp-cell" type="text" maxlength="1" inputmode="numeric">
+                                    <input class="otp-cell" type="text" maxlength="1" inputmode="numeric">
+                                    <input class="otp-cell" type="text" maxlength="1" inputmode="numeric">
+                                    <input class="otp-cell" type="text" maxlength="1" inputmode="numeric">
+                                </div>
+                                <div class="otp-resend-row">
+                                    Didn't receive?
+                                    <a href="#" id="resendLink" class="resend-link">Resend OTP</a>
+                                    <span id="timerText" class="timer-badge"></span>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn-primary-auth mt-3" id="otpSigninBtn" style="display:none;">
+                                <i class="bi bi-shield-check-fill"></i> Verify &amp; Sign In
+                            </button>
+
+                        </form>
+                    </div>
+                </div>
+
+                <!-- OR + Register CTA -->
+                <div class="or-row">
+                    <span class="or-line"></span>
+                    <span class="or-label">New to FASTag?</span>
+                    <span class="or-line"></span>
+                </div>
+
+                <a href="{{ url_for('auth.register') }}" class="btn-secondary-auth">
+                    <i class="bi bi-person-plus-fill"></i> Create a New Account
+                </a>
+
+                <!-- Footer -->
+                <div class="auth-form-footer">
+                    <a href="#">Help &amp; Support</a>
+                    <span>·</span>
+                    <a href="#">Privacy Policy</a>
+                    <span>·</span>
+                    <a href="#">Terms of Use</a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

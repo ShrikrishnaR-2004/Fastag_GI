@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+{% block title %}Profile Settings — FASTag Portal{% endblock %}
+
+{% block content %}
+<div class="dashboard-layout">
+    {% set active_page = 'profile' %}
+    {% include 'dashboard/_sidebar.html' %}
+
+    <main class="dashboard-main">
+        <header class="dashboard-header">
+            <div class="dashboard-title">
+                <h1>Profile Settings</h1>
+                <p>Manage your account information and security</p>
+            </div>
+        </header>
+
+        <div class="dashboard-content">
+            <div class="page-grid-2col">
+
+                <!-- Profile Info Form -->
+                <div class="card-panel">
+                    <div class="card-panel-header">
+                        <span class="card-panel-title">Personal Information</span>
+                    </div>
+                    <div class="card-panel-body">
+
+                        <!-- Avatar -->
+                        <div style="display:flex; align-items:center; gap:1rem; margin-bottom:1.75rem; padding-bottom:1.75rem; border-bottom:1px solid var(--gray-150);">
+                            <div style="width:64px; height:64px; background:linear-gradient(135deg, var(--navy-600), var(--navy-400)); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.6rem; font-weight:800; color:#fff; flex-shrink:0;">
+                                {{ current_user.full_name[0].upper() }}
+                            </div>
+                            <div>
+                                <div style="font-size:1rem; font-weight:700; color:var(--navy-900);">{{ current_user.full_name }}</div>
+                                <div style="font-size:0.82rem; color:var(--gray-500);">{{ current_user.email }}</div>
+                                <div style="font-size:0.72rem; color:var(--gray-400); margin-top:0.15rem; font-weight:600; text-transform:uppercase; letter-spacing:0.05em;">{{ current_user.role }}</div>
+                            </div>
+                        </div>
+
+                        <form method="POST" action="{{ url_for('dash.profile') }}" novalidate>
+                            {{ profile_form.hidden_tag() }}
+
+                            <div class="field-row">
+                                <label class="field-label"><i class="bi bi-person"></i> Full Name</label>
+                                {{ profile_form.full_name(class='form-control', id='full_name') }}
+                                {% for e in profile_form.full_name.errors %}
+                                <div class="field-error"><i class="bi bi-exclamation-circle"></i> {{ e }}</div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="field-row">
+                                <label class="field-label"><i class="bi bi-envelope"></i> Email Address</label>
+                                {{ profile_form.email(class='form-control', id='email') }}
+                                {% for e in profile_form.email.errors %}
+                                <div class="field-error"><i class="bi bi-exclamation-circle"></i> {{ e }}</div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="field-row">
+                                <label class="field-label"><i class="bi bi-phone"></i> Mobile Number</label>
+                                <div class="phone-wrap">
+                                    <span class="phone-prefix">+91</span>
+                                    {{ profile_form.mobile_number(class='form-control', id='mobile_number', placeholder='10-digit number') }}
+                                </div>
+                                {% for e in profile_form.mobile_number.errors %}
+                                <div class="field-error"><i class="bi bi-exclamation-circle"></i> {{ e }}</div>
+                                {% endfor %}
+                            </div>
+
+                            <button type="submit" name="profile-submit" class="btn-primary-auth" style="margin-top:0.5rem;">
+                                <i class="bi bi-check-lg"></i> Save Changes
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <div style="display:flex; flex-direction:column; gap:1.25rem;">
+
+                    <!-- Change Password Form -->
+                    <div class="card-panel">
+                        <div class="card-panel-header">
+                            <span class="card-panel-title">Change Password</span>
+                        </div>
+                        <div class="card-panel-body">
+                            <form method="POST" action="{{ url_for('dash.profile') }}" novalidate>
+                                {{ password_form.hidden_tag() }}
+
+                                <div class="field-row">
+                                    <label class="field-label"><i class="bi bi-lock"></i> Current Password</label>
+                                    <div class="input-shell has-action">
+                                        {{ password_form.current_password(class='form-control', id='cur_pwd', type='password') }}
+                                        <button type="button" class="input-action" onclick="togglePwd('cur_pwd', this)" aria-label="Show/hide password">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                    </div>
+                                    {% for e in password_form.current_password.errors %}
+                                    <div class="field-error"><i class="bi bi-exclamation-circle"></i> {{ e }}</div>
+                                    {% endfor %}
+                                </div>
+
+                                <div class="field-row">
+                                    <label class="field-label"><i class="bi bi-key"></i> New Password</label>
+                                    <div class="input-shell has-action">
+                                        {{ password_form.new_password(class='form-control', id='new_pwd', type='password') }}
+                                        <button type="button" class="input-action" onclick="togglePwd('new_pwd', this)" aria-label="Show/hide password">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                    </div>
+                                    {% for e in password_form.new_password.errors %}
+                                    <div class="field-error"><i class="bi bi-exclamation-circle"></i> {{ e }}</div>
+                                    {% endfor %}
+                                </div>
+
+                                <div class="field-row">
+                                    <label class="field-label"><i class="bi bi-key-fill"></i> Confirm New Password</label>
+                                    {{ password_form.confirm_password(class='form-control', id='conf_pwd', type='password') }}
+                                    {% for e in password_form.confirm_password.errors %}
+                                    <div class="field-error"><i class="bi bi-exclamation-circle"></i> {{ e }}</div>
+                                    {% endfor %}
+                                </div>
+
+                                <button type="submit" name="pwd-submit" class="btn-secondary-auth" style="margin-top:0.5rem;">
+                                    <i class="bi bi-shield-lock"></i> Update Password
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Account Info Card -->
+                    <div class="card-panel">
+                        <div class="card-panel-header">
+                            <span class="card-panel-title">Account Info</span>
+                        </div>
+                        <div class="card-panel-body">
+                            <div style="display:flex; flex-direction:column; gap:0.875rem;">
+                                <div class="info-row">
+                                    <span class="info-label">Account ID</span>
+                                    <span class="info-value">#{{ '%06d'|format(current_user.id) }}</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Member Since</span>
+                                    <span class="info-value">{{ current_user.created_at.strftime('%d %B %Y') }}</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Last Login</span>
+                                    <span class="info-value">{{ current_user.last_login.strftime('%d %b %Y, %I:%M %p') if current_user.last_login else 'N/A' }}</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Email Verified</span>
+                                    <span class="info-value">
+                                        {% if current_user.email_verified %}
+                                        <span style="color:var(--success); font-weight:600;"><i class="bi bi-check-circle-fill"></i> Verified</span>
+                                        {% else %}
+                                        <span style="color:var(--warning); font-weight:600;"><i class="bi bi-exclamation-circle"></i> Not Verified</span>
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function togglePwd(id, btn) {
+    const input = document.getElementById(id);
+    const icon  = btn.querySelector('i');
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'bi bi-eye-slash';
+    } else {
+        input.type = 'password';
+        icon.className = 'bi bi-eye';
+    }
+}
+document.addEventListener('DOMContentLoaded', () => {
+    const sidebar = document.getElementById('sidebar');
+    const toggle  = document.getElementById('sidebarToggle');
+    const KEY     = 'fastagSidebarCollapsed';
+    if (localStorage.getItem(KEY) === 'true') sidebar.classList.add('collapsed');
+    toggle.addEventListener('click', () => {
+        sidebar.classList.toggle('collapsed');
+        localStorage.setItem(KEY, sidebar.classList.contains('collapsed'));
+    });
+});
+</script>
+{% endblock %}

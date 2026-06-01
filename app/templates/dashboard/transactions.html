@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+{% block title %}Transactions — FASTag Portal{% endblock %}
+
+{% block content %}
+<div class="dashboard-layout">
+    {% set active_page = 'transactions' %}
+    {% include 'dashboard/_sidebar.html' %}
+
+    <main class="dashboard-main">
+        <header class="dashboard-header">
+            <div class="dashboard-title">
+                <h1>Transaction History</h1>
+                <p>View all your toll payments, recharges, and more</p>
+            </div>
+        </header>
+
+        <div class="dashboard-content">
+            <div class="card-panel">
+
+                <!-- Filters -->
+                <div class="card-panel-header" style="flex-wrap:wrap; gap:0.75rem;">
+                    <span class="card-panel-title">All Transactions</span>
+                    <form method="GET" action="{{ url_for('dash.transactions') }}" class="filter-form">
+                        <select name="type" class="filter-select" onchange="this.form.submit()">
+                            <option value="">All Types</option>
+                            <option value="toll"     {{ 'selected' if type_filter == 'toll' }}>Toll</option>
+                            <option value="recharge" {{ 'selected' if type_filter == 'recharge' }}>Recharge</option>
+                            <option value="parking"  {{ 'selected' if type_filter == 'parking' }}>Parking</option>
+                            <option value="fuel"     {{ 'selected' if type_filter == 'fuel' }}>Fuel</option>
+                        </select>
+                        <select name="status" class="filter-select" onchange="this.form.submit()">
+                            <option value="">All Statuses</option>
+                            <option value="success" {{ 'selected' if status_filter == 'success' }}>Success</option>
+                            <option value="pending" {{ 'selected' if status_filter == 'pending' }}>Pending</option>
+                            <option value="failed"  {{ 'selected' if status_filter == 'failed' }}>Failed</option>
+                        </select>
+                        {% if type_filter or status_filter %}
+                        <a href="{{ url_for('dash.transactions') }}" class="filter-clear">Clear filters</a>
+                        {% endif %}
+                    </form>
+                </div>
+
+                <div class="card-panel-body no-pad">
+                    {% if transactions %}
+                    <table class="table-modern">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Type &amp; Location</th>
+                                <th>Vehicle</th>
+                                <th>Date &amp; Time</th>
+                                <th style="text-align:right;">Amount</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for tx in transactions %}
+                            <tr>
+                                <td style="color:var(--gray-400); font-size:0.78rem; font-weight:600;">#{{ tx.id }}</td>
+                                <td>
+                                    <div class="tx-cell">
+                                        <div class="tx-type-icon tx-{{ tx.type }}">
+                                            {% if tx.type == 'toll' %}<i class="bi bi-signpost-split"></i>
+                                            {% elif tx.type == 'recharge' %}<i class="bi bi-arrow-down-circle"></i>
+                                            {% elif tx.type == 'parking' %}<i class="bi bi-p-square"></i>
+                                            {% elif tx.type == 'fuel' %}<i class="bi bi-fuel-pump"></i>
+                                            {% else %}<i class="bi bi-receipt"></i>{% endif %}
+                                        </div>
+                                        <div class="tx-cell-info">
+                                            <span class="tx-cell-main">{{ tx.location or ('Wallet Recharge' if tx.type == 'recharge' else tx.type.capitalize()) }}</span>
+                                            <span class="tx-cell-sub">{{ tx.type.capitalize() }}</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if tx.vehicle %}
+                                    <span style="font-family:monospace; font-weight:700; font-size:0.8rem; color:var(--navy-800);">{{ tx.vehicle.registration_number }}</span>
+                                    {% else %}
+                                    <span style="color:var(--gray-400);">—</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div style="font-size:0.875rem;">{{ tx.created_at.strftime('%d %b %Y') }}</div>
+                                    <div style="font-size:0.72rem; color:var(--gray-400);">{{ tx.created_at.strftime('%I:%M %p') }}</div>
+                                </td>
+                                <td style="text-align:right;">
+                                    {% if tx.amount > 0 %}
+                                    <span class="amount-positive">+₹{{ '%.2f'|format(tx.amount) }}</span>
+                                    {% else %}
+                                    <span class="amount-negative">−₹{{ '%.2f'|format(tx.amount|abs) }}</span>
+                                    {% endif %}
+                                </td>
+                                <td><span class="status-badge status-{{ tx.status }}">{{ tx.status.capitalize() }}</span></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+
+                    <!-- Pagination -->
+                    {% if pagination.pages > 1 %}
+                    <div class="pagination-bar">
+                        {% if pagination.has_prev %}
+                        <a href="{{ url_for('dash.transactions', page=pagination.prev_num, type=type_filter, status=status_filter) }}" class="page-btn"><i class="bi bi-chevron-left"></i></a>
+                        {% endif %}
+                        {% for p in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                        {% if p %}
+                        <a href="{{ url_for('dash.transactions', page=p, type=type_filter, status=status_filter) }}" class="page-btn {{ 'page-btn-active' if p == pagination.page }}">{{ p }}</a>
+                        {% else %}
+                        <span class="page-ellipsis">…</span>
+                        {% endif %}
+                        {% endfor %}
+                        {% if pagination.has_next %}
+                        <a href="{{ url_for('dash.transactions', page=pagination.next_num, type=type_filter, status=status_filter) }}" class="page-btn"><i class="bi bi-chevron-right"></i></a>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    {% else %}
+                    <div class="empty-state">
+                        <i class="bi bi-receipt"></i>
+                        <p>No transactions found{% if type_filter or status_filter %} for the selected filters{% endif %}.</p>
+                    </div>
+                    {% endif %}
+                </div>
+
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const sidebar = document.getElementById('sidebar');
+    const toggle  = document.getElementById('sidebarToggle');
+    const KEY     = 'fastagSidebarCollapsed';
+    if (localStorage.getItem(KEY) === 'true') sidebar.classList.add('collapsed');
+    toggle.addEventListener('click', () => {
+        sidebar.classList.toggle('collapsed');
+        localStorage.setItem(KEY, sidebar.classList.contains('collapsed'));
+    });
+});
+</script>
+{% endblock %}

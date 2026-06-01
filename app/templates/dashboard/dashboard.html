@@ -1,0 +1,316 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — FASTag Portal{% endblock %}
+
+{% block content %}
+<div class="dashboard-layout">
+    {% set active_page = 'overview' %}
+    {% include 'dashboard/_sidebar.html' %}
+
+    <main class="dashboard-main">
+
+        <!-- Top Header Bar -->
+        <header class="dashboard-header">
+            <div class="dashboard-title">
+                <h1>Good {{ 'morning' if now.hour < 12 else ('afternoon' if now.hour < 17 else 'evening') }}, {{ current_user.full_name.split()[0] }}!</h1>
+                <p>{{ now.strftime('%A, %d %B %Y') }} &nbsp;·&nbsp; FASTag Account Overview</p>
+            </div>
+            <div class="header-actions">
+                <a href="{{ url_for('dash.recharge') }}" class="btn-recharge">
+                    <i class="bi bi-plus-lg"></i> Recharge Now
+                </a>
+            </div>
+        </header>
+
+        <!-- Scrollable Content -->
+        <div class="dashboard-content">
+
+            <!-- ─── Low Balance Warning ─── -->
+            {% if wallet_balance < 200 %}
+            <div class="wallet-warning">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                <div>
+                    Your wallet balance is <strong>₹{{ "%.2f"|format(wallet_balance) }}</strong> — this may be insufficient for upcoming toll payments.
+                    <a href="{{ url_for('dash.recharge') }}">Recharge now →</a>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- ─── Stats Grid ─── -->
+            <div class="stats-grid">
+
+                <div class="stat-card">
+                    <div class="stat-info">
+                        <span class="stat-label">Wallet Balance</span>
+                        <span class="stat-value">₹{{ "%.2f"|format(wallet_balance) }}</span>
+                        <span class="stat-sub">
+                            {% if last_recharge %}
+                            <i class="bi bi-arrow-up-right"></i> Last topped up {{ last_recharge.created_at.strftime('%d %b') }}
+                            {% else %}No recharges yet{% endif %}
+                        </span>
+                    </div>
+                    <div class="stat-icon icon-blue"><i class="bi bi-wallet2"></i></div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-info">
+                        <span class="stat-label">Active FASTags</span>
+                        <span class="stat-value">{{ active_vehicles_count }}</span>
+                        <span class="stat-sub up">
+                            <i class="bi bi-check-circle-fill"></i>
+                            {{ active_vehicles_count }} vehicle{{ 's' if active_vehicles_count != 1 else '' }} registered
+                        </span>
+                    </div>
+                    <div class="stat-icon icon-gold"><i class="bi bi-car-front"></i></div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-info">
+                        <span class="stat-label">Tolls Paid — {{ now.strftime('%B') }}</span>
+                        <span class="stat-value">₹{{ "%.2f"|format(tolls_paid_this_month) }}</span>
+                        <span class="stat-sub"><i class="bi bi-signpost-split"></i> This calendar month</span>
+                    </div>
+                    <div class="stat-icon icon-purple"><i class="bi bi-signpost-split"></i></div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-info">
+                        <span class="stat-label">Total Spent</span>
+                        <span class="stat-value">₹{{ "%.2f"|format(total_spent) }}</span>
+                        <span class="stat-sub"><i class="bi bi-graph-up"></i> All-time tolls &amp; parking</span>
+                    </div>
+                    <div class="stat-icon icon-green"><i class="bi bi-graph-up-arrow"></i></div>
+                </div>
+
+            </div><!-- /stats-grid -->
+
+            <!-- ─── Charts Row ─── -->
+            <div class="content-grid">
+
+                <div class="card-panel">
+                    <div class="card-panel-header">
+                        <span class="card-panel-title">Monthly Spending Trend</span>
+                        <span style="font-size:0.78rem; color:var(--gray-400); font-weight:500;">Last 6 months</span>
+                    </div>
+                    <div class="card-panel-body" style="min-height:260px; display:flex; align-items:center;">
+                        <canvas id="barChart" style="width:100%;"></canvas>
+                    </div>
+                </div>
+
+                <div class="card-panel">
+                    <div class="card-panel-header">
+                        <span class="card-panel-title">{{ now.strftime('%B') }} Breakdown</span>
+                    </div>
+                    <div class="card-panel-body" style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1rem; min-height:260px;">
+                        {% set total_expense = expense_data.toll + expense_data.parking + expense_data.fuel %}
+                        {% if total_expense > 0 %}
+                        <div class="chart-wrap" style="width:200px; height:200px; position:relative;">
+                            <canvas id="doughnutChart"></canvas>
+                            <div class="doughnut-center">
+                                <div class="doughnut-center-value">₹{{ "%.0f"|format(total_expense) }}</div>
+                                <div class="doughnut-center-label">Total</div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="empty-state" style="padding:1rem;">
+                            <i class="bi bi-pie-chart"></i>
+                            <p>No expenses recorded this month</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+            </div><!-- /content-grid -->
+
+            <!-- ─── Transactions + Vehicles Row ─── -->
+            <div class="content-grid-wide">
+
+                <div class="card-panel">
+                    <div class="card-panel-header">
+                        <span class="card-panel-title">Recent Transactions</span>
+                        <a href="{{ url_for('dash.transactions') }}" class="link-subtle">View All →</a>
+                    </div>
+                    <div class="card-panel-body no-pad">
+                        {% if recent_transactions %}
+                        <table class="table-modern">
+                            <thead>
+                                <tr>
+                                    <th>Type &amp; Location</th>
+                                    <th>Vehicle</th>
+                                    <th>Date</th>
+                                    <th style="text-align:right;">Amount</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for tx in recent_transactions %}
+                                <tr>
+                                    <td>
+                                        <div class="tx-cell">
+                                            <div class="tx-type-icon tx-{{ tx.type }}">
+                                                {% if tx.type == 'toll' %}<i class="bi bi-signpost-split"></i>
+                                                {% elif tx.type == 'recharge' %}<i class="bi bi-arrow-down-circle"></i>
+                                                {% elif tx.type == 'parking' %}<i class="bi bi-p-square"></i>
+                                                {% elif tx.type == 'fuel' %}<i class="bi bi-fuel-pump"></i>
+                                                {% else %}<i class="bi bi-receipt"></i>{% endif %}
+                                            </div>
+                                            <div class="tx-cell-info">
+                                                <span class="tx-cell-main">{{ tx.location if tx.location else ('Wallet Recharge' if tx.type == 'recharge' else tx.type.capitalize()) }}</span>
+                                                <span class="tx-cell-sub">{{ tx.type.capitalize() }}</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% if tx.vehicle %}
+                                        <span style="font-family:monospace; font-size:0.8rem; font-weight:700; color:var(--navy-800);">{{ tx.vehicle.registration_number }}</span>
+                                        {% else %}<span style="color:var(--gray-400);">—</span>{% endif %}
+                                    </td>
+                                    <td>
+                                        <div style="font-size:0.875rem; color:var(--gray-700);">{{ tx.created_at.strftime('%d %b %Y') }}</div>
+                                        <div style="font-size:0.72rem; color:var(--gray-400);">{{ tx.created_at.strftime('%I:%M %p') }}</div>
+                                    </td>
+                                    <td style="text-align:right;">
+                                        {% if tx.amount > 0 %}
+                                        <span class="amount-positive">+₹{{ "%.2f"|format(tx.amount) }}</span>
+                                        {% else %}
+                                        <span class="amount-negative">−₹{{ "%.2f"|format(tx.amount|abs) }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td><span class="status-badge status-{{ tx.status }}">{{ tx.status.capitalize() }}</span></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        {% else %}
+                        <div class="empty-state">
+                            <i class="bi bi-receipt"></i>
+                            <p>No transactions yet. Your activity will appear here after your first toll or recharge.</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="card-panel">
+                    <div class="card-panel-header">
+                        <span class="card-panel-title">My Vehicles</span>
+                        <a href="{{ url_for('dash.vehicles') }}" class="link-subtle">Manage →</a>
+                    </div>
+                    <div class="card-panel-body" style="padding: 0.75rem 1.25rem;">
+                        {% if vehicles %}
+                        <div style="display:flex; flex-direction:column; gap:0.625rem;">
+                            {% for v in vehicles %}
+                            <div class="vehicle-card">
+                                <div style="width:36px; height:36px; border-radius:var(--r-sm); background:var(--navy-50); display:flex; align-items:center; justify-content:center; color:var(--navy-500); font-size:1rem; flex-shrink:0;">
+                                    <i class="bi bi-car-front"></i>
+                                </div>
+                                <div class="vehicle-meta">
+                                    <div class="vehicle-plate">{{ v.registration_number }}</div>
+                                    <span class="vehicle-status {{ '' if v.is_active else 'inactive' }}">
+                                        {{ 'Active' if v.is_active else 'Inactive' }}
+                                    </span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="empty-state">
+                            <i class="bi bi-car-front"></i>
+                            <p>No vehicles registered.<br><a href="{{ url_for('dash.vehicles') }}" style="color:var(--navy-500); font-weight:600;">Add one now →</a></p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+            </div><!-- /content-grid-wide -->
+
+        </div><!-- /dashboard-content -->
+    </main>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const sidebar = document.getElementById('sidebar');
+    const toggle  = document.getElementById('sidebarToggle');
+    const KEY     = 'fastagSidebarCollapsed';
+    if (localStorage.getItem(KEY) === 'true') sidebar.classList.add('collapsed');
+    toggle.addEventListener('click', () => {
+        sidebar.classList.toggle('collapsed');
+        localStorage.setItem(KEY, sidebar.classList.contains('collapsed'));
+    });
+
+    Chart.defaults.font.family = "'Inter', sans-serif";
+
+    const barCtx = document.getElementById('barChart');
+    if (barCtx) {
+        new Chart(barCtx, {
+            type: 'bar',
+            data: {
+                labels: {{ monthly_labels | tojson }},
+                datasets: [{
+                    label: 'Total Spent (₹)',
+                    data: {{ monthly_values | tojson }},
+                    backgroundColor: function(ctx) {
+                        const chart = ctx.chart;
+                        const { ctx: c, chartArea } = chart;
+                        if (!chartArea) return '#3b72d0';
+                        const g = c.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+                        g.addColorStop(0, 'rgba(37,85,168,0.85)');
+                        g.addColorStop(1, 'rgba(59,114,208,0.25)');
+                        return g;
+                    },
+                    borderColor: 'rgba(37,85,168,0)',
+                    borderRadius: 8, borderSkipped: false,
+                    hoverBackgroundColor: 'rgba(37,85,168,0.95)',
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#0a1628', padding: 12, cornerRadius: 10,
+                        callbacks: { label: ctx => ' ₹' + ctx.parsed.y.toLocaleString('en-IN', {minimumFractionDigits:2}) }
+                    }
+                },
+                scales: {
+                    x: { grid: { display: false }, ticks: { color: '#6b6b7b', font: { size: 12, weight: '600' } } },
+                    y: {
+                        grid: { color: 'rgba(0,0,0,0.05)' },
+                        ticks: { color: '#9595a4', font: { size: 11 }, callback: v => '₹' + (v >= 1000 ? (v/1000).toFixed(1)+'k' : v) },
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+
+    const donutCtx = document.getElementById('doughnutChart');
+    if (donutCtx) {
+        new Chart(donutCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Toll Payments', 'Parking', 'Fuel'],
+                datasets: [{
+                    data: [{{ expense_data.toll|default(0) }}, {{ expense_data.parking|default(0) }}, {{ expense_data.fuel|default(0) }}],
+                    backgroundColor: ['#2555a8', '#f59e0b', '#dc2626'],
+                    hoverBackgroundColor: ['#1d4280', '#d97706', '#b91c1c'],
+                    borderWidth: 3, borderColor: '#ffffff', hoverOffset: 6
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: true, cutout: '72%',
+                plugins: {
+                    legend: { position: 'bottom', labels: { padding: 16, font: { size: 12, weight: '600' }, color: '#4b4b56', usePointStyle: true, pointStyleWidth: 10 } },
+                    tooltip: {
+                        backgroundColor: '#0a1628', padding: 12, cornerRadius: 10,
+                        callbacks: { label: ctx => ' ₹' + ctx.parsed.toLocaleString('en-IN', {minimumFractionDigits:2}) }
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

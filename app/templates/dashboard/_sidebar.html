@@ -1,0 +1,100 @@
+{# ─────────────────────────────────────────────────────────────────────────
+   _sidebar.html  –  included by every dashboard page
+   Expects: active_vehicles_count, kyc_status, current_user, active_page
+───────────────────────────────────────────────────────────────────────── #}
+<aside class="dashboard-sidebar" id="sidebar">
+
+    {# Brand #}
+    <div class="sidebar-header">
+        <a href="{{ url_for('dash.overview') }}" class="sidebar-brand">
+            <div class="sidebar-brand-icon">
+                <i class="bi bi-car-front-fill"></i>
+            </div>
+            <div class="sidebar-brand-text">
+                <span class="sidebar-brand-name">FASTag</span>
+                <span class="sidebar-brand-sub">NHAI · Gov of India</span>
+            </div>
+        </a>
+        <button class="sidebar-toggle" id="sidebarToggle" title="Toggle sidebar" aria-label="Toggle sidebar">
+            <i class="bi bi-layout-sidebar-inset"></i>
+        </button>
+    </div>
+
+    {# User chip #}
+    <div class="sidebar-profile">
+        <div class="sidebar-avatar">
+            {{ current_user.full_name[0].upper() if current_user.full_name else 'U' }}
+        </div>
+        <div class="sidebar-profile-info">
+            <div class="sidebar-profile-name">{{ current_user.full_name }}</div>
+            <div class="sidebar-profile-role">{{ current_user.role }}</div>
+        </div>
+    </div>
+
+    {# Nav #}
+    <nav class="sidebar-nav" role="navigation" aria-label="Main navigation">
+
+        <div class="sidebar-nav-section">Main</div>
+
+        <a href="{{ url_for('dash.overview') }}"
+           class="sidebar-link {{ 'active' if active_page == 'overview' }}" title="Overview">
+            <i class="bi bi-grid-fill sidebar-link-icon"></i>
+            <span class="sidebar-link-text">Overview</span>
+        </a>
+
+        <a href="{{ url_for('dash.vehicles') }}"
+           class="sidebar-link {{ 'active' if active_page == 'vehicles' }}" title="My Vehicles">
+            <i class="bi bi-car-front sidebar-link-icon"></i>
+            <span class="sidebar-link-text">My Vehicles</span>
+            {% if active_vehicles_count > 0 %}
+            <span class="sidebar-badge">{{ active_vehicles_count }}</span>
+            {% endif %}
+        </a>
+
+        <a href="{{ url_for('dash.transactions') }}"
+           class="sidebar-link {{ 'active' if active_page == 'transactions' }}" title="Transactions">
+            <i class="bi bi-receipt sidebar-link-icon"></i>
+            <span class="sidebar-link-text">Transactions</span>
+        </a>
+
+        <div class="sidebar-nav-section">Wallet</div>
+
+        <a href="{{ url_for('dash.recharge') }}"
+           class="sidebar-link {{ 'active' if active_page == 'recharge' }}" title="Recharge Wallet">
+            <i class="bi bi-wallet2 sidebar-link-icon"></i>
+            <span class="sidebar-link-text">Recharge Wallet</span>
+        </a>
+
+        <div class="sidebar-nav-section">Account</div>
+
+        <a href="{{ url_for('dash.profile') }}"
+           class="sidebar-link {{ 'active' if active_page == 'profile' }}" title="Profile Settings">
+            <i class="bi bi-person-gear sidebar-link-icon"></i>
+            <span class="sidebar-link-text">Profile Settings</span>
+        </a>
+
+        <a href="{{ url_for('dash.kyc') }}"
+           class="sidebar-link {{ 'active' if active_page == 'kyc' }}" title="KYC Verification">
+            <i class="bi bi-shield-check sidebar-link-icon"></i>
+            <span class="sidebar-link-text">KYC Verification</span>
+            {# Status dot #}
+            {% if kyc_status == 'not_submitted' %}
+            <span class="sidebar-badge" style="background:var(--danger);">!</span>
+            {% elif kyc_status == 'pending' %}
+            <span class="sidebar-badge" style="background:#d97706;">…</span>
+            {% elif kyc_status == 'verified' %}
+            <span class="sidebar-badge" style="background:var(--success);">✓</span>
+            {% endif %}
+        </a>
+
+    </nav>
+
+    {# Footer #}
+    <div class="sidebar-footer">
+        <a href="{{ url_for('auth.logout') }}" class="sidebar-link sidebar-link-danger" title="Logout">
+            <i class="bi bi-box-arrow-right sidebar-link-icon"></i>
+            <span class="sidebar-link-text">Logout</span>
+        </a>
+    </div>
+
+</aside>

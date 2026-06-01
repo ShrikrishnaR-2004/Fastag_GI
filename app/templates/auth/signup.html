@@ -1,0 +1,285 @@
+{% extends "base.html" %}
+{% block title %}Create Account — FASTag Portal{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+
+    <!-- ═══════════════ LEFT PANEL ═══════════════ -->
+    <div class="auth-left">
+        <div class="auth-left-bg"></div>
+        <div class="auth-left-grid"></div>
+        <div class="blob blob-a"></div>
+        <div class="blob blob-b"></div>
+        <div class="blob blob-c"></div>
+
+        <div class="auth-left-inner">
+
+            <!-- Brand -->
+            <div class="brand-mark">
+                <div class="brand-icon-wrap">
+                    <svg width="26" height="26" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M16 4L4 10v12l12 6 12-6V10L16 4z" stroke="white" stroke-width="1.8" stroke-linejoin="round" fill="none" opacity=".6"/>
+                        <path d="M16 4v18M4 10l12 6 12-6" stroke="white" stroke-width="1.8" stroke-linejoin="round"/>
+                        <circle cx="16" cy="16" r="3.5" fill="white" opacity=".9"/>
+                    </svg>
+                </div>
+                <div class="brand-text-wrap">
+                    <div class="brand-name-main">FASTag <span class="brand-name-sub">Portal</span></div>
+                    <!-- <div class="brand-gov-label">NHAI · Government of India</div> -->
+                </div>
+            </div>
+
+            <!-- Hero -->
+            <div class="auth-hero">
+                <div class="auth-badge">
+                    <i class="bi bi-person-check-fill"></i>
+                    Join Fastag Users
+                </div>
+                <h1 class="auth-hero-title">
+                    Fast. Easy.<br><span>Always Ready.</span>
+                </h1>
+                <p class="auth-hero-desc">
+                    Create your FASTag account in minutes and enjoy cashless travel on all national highways across India.
+                </p>
+
+                <!-- How it works -->
+                <div class="feature-cards">
+                    <div class="feature-card">
+                        <div class="fc-icon fc-icon-gold" style="font-weight:800;font-size:.9rem;">01</div>
+                        <div>
+                            <div class="fc-title">Create Your Account</div>
+                            <div class="fc-desc">Fill in your details &amp; set a secure password</div>
+                        </div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="fc-icon fc-icon-blue" style="font-weight:800;font-size:.9rem;">02</div>
+                        <div>
+                            <div class="fc-title">Link Your Vehicle</div>
+                            <div class="fc-desc">Add your vehicle &amp; FASTag ID number</div>
+                        </div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="fc-icon fc-icon-green" style="font-weight:800;font-size:.9rem;">03</div>
+                        <div>
+                            <div class="fc-title">Recharge &amp; Go</div>
+                            <div class="fc-desc">Top up your wallet and hit the road</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="auth-trust">
+                    <!-- <div class="trust-pill"><i class="bi bi-lock-fill"></i> 256-bit SSL</div>
+                    <div class="trust-sep">·</div>
+                    <div class="trust-pill"><i class="bi bi-patch-check-fill"></i> NHAI Certified</div>
+                    <div class="trust-sep">·</div>
+                    <div class="trust-pill"><i class="bi bi-shield-fill-check"></i> Data Protected</div> -->
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ═══════════════ RIGHT PANEL ═══════════════ -->
+    <div class="auth-right">
+
+        <!-- Top bar -->
+        <div class="auth-right-topbar">
+            <a href="{{ url_for('auth.login') }}" class="topbar-brand">
+                <div class="topbar-icon">
+                    <svg width="18" height="18" viewBox="0 0 32 32" fill="none">
+                        <path d="M16 4L4 10v12l12 6 12-6V10L16 4z" stroke="#1d4280" stroke-width="2" stroke-linejoin="round" fill="none"/>
+                        <circle cx="16" cy="16" r="3" fill="#1d4280"/>
+                    </svg>
+                </div>
+                <span class="topbar-brand-name">FASTag <span>Portal</span></span>
+            </a>
+            <div class="topbar-meta">
+                <i class="bi bi-shield-fill-check"></i>
+                Secured Connection
+            </div>
+        </div>
+
+        <!-- Form area -->
+        <div class="auth-form-wrap">
+            <div class="auth-form-card" style="max-width:500px;">
+
+                <!-- Header -->
+                <div class="form-kicker">
+                    <div class="form-kicker-dot"></div>
+                    New Registration
+                </div>
+                <h2 class="form-h1">Create your account</h2>
+                <p class="form-lead">It's free and takes less than 2 minutes.</p>
+
+                <!-- Progress bar -->
+                <div style="margin-top:1.25rem;margin-bottom:.25rem;">
+                    <div class="progress-shell">
+                        <div class="progress-fill" id="signupProgress" style="width:0%"></div>
+                    </div>
+                    <div class="progress-copy" id="progressLabel">Fill in your details to get started</div>
+                </div>
+
+                <div class="section-divider"></div>
+
+                <form id="signupForm" method="POST" action="{{ url_for('auth.register') }}" novalidate>
+                    {{ form.hidden_tag() }}
+
+                    <!-- Full Name -->
+                    <div class="field-row">
+                        <label for="fullName" class="field-label">
+                            <i class="bi bi-person"></i> Full Name
+                        </label>
+                        <div class="input-shell">
+                            {{ form.full_name(
+                                class="form-control",
+                                id="fullName",
+                                placeholder="As per your Aadhaar / PAN card"
+                            ) }}
+                        </div>
+                        {% for error in form.full_name.errors %}
+                            <div class="field-error"><i class="bi bi-exclamation-circle"></i>{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Email + Mobile row -->
+                    <div class="row g-3" style="margin-bottom:1.125rem;">
+                        <div class="col-12 col-sm-6">
+                            <div class="field-label"><i class="bi bi-envelope"></i> Email Address</div>
+                            <div class="input-shell">
+                                {{ form.email(
+                                    class="form-control",
+                                    id="emailAddr",
+                                    placeholder="you@example.com",
+                                    autocomplete="email"
+                                ) }}
+                            </div>
+                            {% for error in form.email.errors %}
+                                <div class="field-error duplicate-error">
+                                    <i class="bi bi-exclamation-circle"></i>
+                                    {{ error }}
+                                    {% if 'already exists' in error or 'already registered' in error %}
+                                        &nbsp;·&nbsp;<a href="{{ url_for('auth.login') }}" class="duplicate-signin-link">Sign in instead</a>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <div class="col-12 col-sm-6">
+                            <div class="field-label"><i class="bi bi-phone"></i> Mobile Number</div>
+                            <div class="phone-wrap">
+                                <span class="phone-prefix">+91</span>
+                                {{ form.mobile_number(
+                                    class="form-control",
+                                    id="mobileNum",
+                                    placeholder="10-digit number",
+                                    maxlength="10",
+                                    inputmode="numeric"
+                                ) }}
+                            </div>
+                            {% for error in form.mobile_number.errors %}
+                                <div class="field-error duplicate-error">
+                                    <i class="bi bi-exclamation-circle"></i>
+                                    {{ error }}
+                                    {% if 'linked to an account' in error or 'already registered' in error %}
+                                        &nbsp;·&nbsp;<a href="{{ url_for('auth.login') }}" class="duplicate-signin-link">Sign in instead</a>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Password -->
+                    <div class="field-row">
+                        <label for="signupPwd" class="field-label">
+                            <i class="bi bi-lock"></i> Password
+                        </label>
+                        <div class="input-shell has-action">
+                            {{ form.password(
+                                class="form-control",
+                                id="signupPwd",
+                                placeholder="Minimum 8 characters",
+                                autocomplete="new-password"
+                            ) }}
+                            <button type="button" class="input-action" id="eyeBtnSignup">
+                                <i class="bi bi-eye" id="eyeIconSignup"></i>
+                            </button>
+                        </div>
+                        <div class="strength-track">
+                            <div class="strength-seg" id="seg1"></div>
+                            <div class="strength-seg" id="seg2"></div>
+                            <div class="strength-seg" id="seg3"></div>
+                            <div class="strength-seg" id="seg4"></div>
+                        </div>
+                        <div class="strength-copy" id="strengthLabel"></div>
+                        {% for error in form.password.errors %}
+                            <div class="field-error"><i class="bi bi-exclamation-circle"></i>{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Confirm Password -->
+                    <div class="field-row">
+                        <label for="confirmPwd" class="field-label">
+                            <i class="bi bi-lock-fill"></i> Confirm Password
+                        </label>
+                        <div class="input-shell has-action">
+                            {{ form.confirm_password(
+                                class="form-control",
+                                id="confirmPwd",
+                                placeholder="Re-enter your password",
+                                autocomplete="new-password"
+                            ) }}
+                            <button type="button" class="input-action" id="eyeBtnConfirm">
+                                <i class="bi bi-eye" id="eyeIconConfirm"></i>
+                            </button>
+                        </div>
+                        <div class="match-copy" id="matchIndicator"></div>
+                        {% for error in form.confirm_password.errors %}
+                            <div class="field-error"><i class="bi bi-exclamation-circle"></i>{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Terms -->
+                    <div class="field-row">
+                        <label class="terms-row">
+                            {{ form.accept_terms(class="terms-native", id="acceptTerms") }}
+                            <span class="terms-box"><i class="bi bi-check2" id="termsCheckIcon"></i></span>
+                            <span class="terms-copy">
+                                I agree to the <a href="#" class="terms-link">Terms &amp; Conditions</a>
+                                and <a href="#" class="terms-link">Privacy Policy</a> of FASTag Portal
+                            </span>
+                        </label>
+                        {% for error in form.accept_terms.errors %}
+                            <div class="field-error mt-1"><i class="bi bi-exclamation-circle"></i>{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Submit -->
+                    {{ form.submit(class="btn-primary-auth", id="createAccountBtn") }}
+
+                </form>
+
+                <!-- OR + Sign In CTA -->
+                <div class="or-row">
+                    <span class="or-line"></span>
+                    <span class="or-label">Already have an account?</span>
+                    <span class="or-line"></span>
+                </div>
+
+                <a href="{{ url_for('auth.login') }}" class="btn-secondary-auth">
+                    <i class="bi bi-box-arrow-in-right"></i> Sign In to Your Account
+                </a>
+
+                <!-- Footer -->
+                <div class="auth-form-footer">
+                    <a href="#">Help &amp; Support</a>
+                    <span>·</span>
+                    <a href="#">Privacy Policy</a>
+                    <span>·</span>
+                    <a href="#">Terms of Use</a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
