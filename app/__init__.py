@@ -14,6 +14,10 @@ def create_app(config_name='default'):
 
     from app import models  # noqa: F401
 
+    # Automatically create database tables if they don't exist yet
+    with app.app_context():
+        db.create_all()
+
     # ── Blueprints ──────────────────────────────────────────────────
     from app.auth import bp as auth_bp
     app.register_blueprint(auth_bp, url_prefix='/auth')
